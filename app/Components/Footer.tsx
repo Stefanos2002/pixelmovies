@@ -16,7 +16,7 @@ function Footer() {
             height={80}
           />
           <span className="title text-white sm:text-xl text-lg mb-2 font-black pointer-events-auto italic font-sans">
-            CineGame Critic
+            Pixel Movies
           </span>
         </div>
         <div className="flex flex-col items-center">
@@ -53,7 +53,7 @@ function Footer() {
       </div>
       <div className="w-full bg-slate-200 h-[0.5px]"></div>
       <span className="text-sm text-center mt-5 text-slate-100 font-thin">
-        © 2024 CineGame Critic. All rights reserved.
+        © 2026 Pixel Movies. All rights reserved.
       </span>
       <span className="text-sm text-center mb-5 text-slate-100 font-thin">
         Game data provided by{" "}

@@ -19,13 +19,13 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.cinegame-critic.com"),
+  metadataBase: new URL("https://www.pixelmovies.gr"),
   title: {
-    default: "CineGame Critic - Reviews of Movies & Games",
-    template: "%s | CineGame Critic",
+    default: "Pixel Movies - Reviews of Movies & Games",
+    template: "%s | Pixel Movies",
   },
   description:
-    "CineGame Critic provides the latest reviews and ratings for movies and video games. Stay updated with our curated reviews from critics.",
+    "Pixel Movies provides the latest reviews and ratings for movies and video games. Stay updated with our curated reviews from critics.",
   keywords: [
     "movies",
     "games",
@@ -50,17 +50,17 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
-    siteName: "CineGame Critic",
-    title: "CineGame Critic - Reviews of Movies & Games",
+    siteName: "Pixel Movies",
+    title: "Pixel Movies - Reviews of Movies & Games",
     description:
-      "CineGame Critic provides the latest reviews and ratings for movies and video games. Stay updated with our curated reviews from critics.",
-    url: "https://www.cinegame-critic.com",
+      "Pixel Movies provides the latest reviews and ratings for movies and video games. Stay updated with our curated reviews from critics.",
+    url: "https://www.pixelmovies.gr",
   },
   twitter: {
     card: "summary_large_image",
-    title: "CineGame Critic - Reviews of Movies & Games",
+    title: "Pixel Movies - Reviews of Movies & Games",
     description:
-      "CineGame Critic provides the latest reviews and ratings for movies and video games.",
+      "Pixel Movies provides the latest reviews and ratings for movies and video games.",
   },
   icons: {
     icon: [
@@ -101,9 +101,9 @@ export default function RootLayout({
               __html: JSON.stringify({
                 "@context": "https://schema.org",
                 "@type": "Organization",
-                name: "CineGame Critic",
-                url: "https://www.cinegame-critic.com",
-                logo: "https://www.cinegame-critic.com/assets/images/site-logo-cropped.png",
+                name: "Pixel Movies",
+                url: "https://www.pixelmovies.gr",
+                logo: "https://www.pixelmovies.gr/assets/images/site-logo-cropped.png",
                 sameAs: [
                   "https://www.linkedin.com/in/stefanos-kaloulis-b4ba792b6",
                   "https://www.linkedin.com/in/apostolos-kyrgidis/",
@@ -113,9 +113,7 @@ export default function RootLayout({
           />
         </head>
         <body>
-          <NextSSRPlugin
-            routerConfig={extractRouterConfig(ourFileRouter)}
-          />
+          <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
           {children}
           <NextTopLoader
             color="#2299DD"
