@@ -12,7 +12,7 @@ import {
   FaLinux,
   FaAndroid,
 } from "react-icons/fa";
-import { SiNintendoswitch } from "react-icons/si";
+import { BsNintendoSwitch } from "react-icons/bs";
 
 interface Platform {
   platform: {
@@ -45,7 +45,7 @@ const platformIcon = (slug: string, id: number) => {
     case "xbox":
       return <FaXbox {...iconProps} />;
     case "nintendo":
-      return <SiNintendoswitch {...iconProps} />;
+      return <BsNintendoSwitch {...iconProps} />;
     case "mac":
       return <FaApple {...iconProps} />;
     case "linux":
@@ -281,11 +281,11 @@ const SearchBar: React.FC<SearchBarProps> = ({ className }) => {
               visible && search.length > 0
                 ? `${
                     search.length *
-                      (window.innerWidth < 420
-                        ? 5.5
-                        : window.innerWidth < 550
-                          ? 6.5
-                          : 8.2)
+                    (window.innerWidth < 420
+                      ? 5.5
+                      : window.innerWidth < 550
+                        ? 6.5
+                        : 8.2)
                   }rem`
                 : "0",
             transition: "height 0.2s ease-in-out",
