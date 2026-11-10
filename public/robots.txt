@@ -9,7 +9,7 @@ Disallow: /Account/
 Disallow: /Authentication/
 
 # Host
-Host: https://www.cinegame-critic.com
+Host: https://www.pixelmovies.gr
 
 # Sitemaps
-Sitemap: https://www.cinegame-critic.com/sitemap.xml
+Sitemap: https://www.pixelmovies.gr/sitemap.xml
