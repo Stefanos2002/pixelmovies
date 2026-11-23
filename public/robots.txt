@@ -1,15 +1,14 @@
 # *
 User-agent: *
 Allow: /
-
-# *
-User-agent: *
 Disallow: /api/
 Disallow: /account/
 Disallow: /authentication/
+Disallow: /verified
 
 # Host
 Host: https://www.pixelmovies.gr
 
 # Sitemaps
 Sitemap: https://www.pixelmovies.gr/sitemap.xml
+Sitemap: https://www.pixelmovies.gr/games-sitemap.xml

@@ -17,8 +17,7 @@ module.exports = {
     // Dynamic sitemap with every game page (app/games-sitemap.xml/route.ts)
     additionalSitemaps: ["https://www.pixelmovies.gr/games-sitemap.xml"],
     policies: [
-      { userAgent: "*", allow: "/" },
-      { userAgent: "*", disallow: ["/api/", "/account/", "/authentication/"] },
+      { userAgent: "*", allow: "/", disallow: ["/api/", "/account/", "/authentication/", "/verified"] },
     ],
   },
   additionalPaths: async (config) => [
