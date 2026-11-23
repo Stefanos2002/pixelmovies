@@ -22,7 +22,7 @@ const UpComing = async ({ params }: { params: { page: string } }) => {
       <TvFilter />
       <div className="flex justify-end mr-10 mt-2">
           <Link
-            href={"/Movies/Upcoming-Movies/1"}
+            href={"/movies/upcoming-movies/1"}
             className="flex flex-row gap-2 mt-2 items-center justify-end p-2 rounded hover:opacity-85 transition duration-200 bg-[#4c545b] cursor-pointer text-[#d1d1d1] not-search trending-button"
           >
             <GiFilmProjector style={{ flexShrink: 0, fontSize: "1.4rem" }} />
@@ -33,7 +33,7 @@ const UpComing = async ({ params }: { params: { page: string } }) => {
         <TVShowCards tvShowData={showData} upcoming />
       </div>
       <div>
-        <MoviePages page={Number(params.page)} link={"/Movies/TVShows/Upcoming-tvshows"} />
+        <MoviePages page={Number(params.page)} link={"/movies/tvshows/upcoming-tvshows"} />
       </div>
     </div>
   );

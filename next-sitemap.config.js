@@ -1,38 +1,41 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: "https://www.cinegame-critic.com",
+  siteUrl: "https://www.pixelmovies.gr",
   generateRobotsTxt: true,
   exclude: [
     "/api/*",
-    "/Authentication/*",
-    "/Account/*",
-    "/Verified",
-    "/Games/construction",
+    "/authentication/*",
+    "/account/*",
+    "/verified",
+    "/games/construction",
+    "/games-sitemap.xml",
   ],
   changefreq: "daily",
   priority: 0.7,
   sitemapSize: 5000,
   robotsTxtOptions: {
+    // Dynamic sitemap with every game page (app/games-sitemap.xml/route.ts)
+    additionalSitemaps: ["https://www.pixelmovies.gr/games-sitemap.xml"],
     policies: [
       { userAgent: "*", allow: "/" },
-      { userAgent: "*", disallow: ["/api/", "/Account/", "/Authentication/"] },
+      { userAgent: "*", disallow: ["/api/", "/account/", "/authentication/"] },
     ],
   },
   additionalPaths: async (config) => [
     // Movies
-    { loc: "/Movies/Movies-trending", changefreq: "daily", priority: 0.9 },
-    { loc: "/Movies/moviePage/1", changefreq: "daily", priority: 0.8 },
-    { loc: "/Movies/moviePage/2", changefreq: "daily", priority: 0.7 },
-    { loc: "/Movies/moviePage/3", changefreq: "daily", priority: 0.7 },
-    { loc: "/Movies/Upcoming-Movies/1", changefreq: "weekly", priority: 0.7 },
+    { loc: "/movies/movies-trending", changefreq: "daily", priority: 0.9 },
+    { loc: "/movies/moviepage/1", changefreq: "daily", priority: 0.8 },
+    { loc: "/movies/moviepage/2", changefreq: "daily", priority: 0.7 },
+    { loc: "/movies/moviepage/3", changefreq: "daily", priority: 0.7 },
+    { loc: "/movies/upcoming-movies/1", changefreq: "weekly", priority: 0.7 },
     // TV Shows
-    { loc: "/Movies/TVShows/Trending", changefreq: "daily", priority: 0.9 },
-    { loc: "/Movies/TVShows/TVShowsPage/1", changefreq: "daily", priority: 0.8 },
-    { loc: "/Movies/TVShows/TVShowsPage/2", changefreq: "daily", priority: 0.7 },
-    { loc: "/Movies/TVShows/Upcoming-tvshows/1", changefreq: "weekly", priority: 0.7 },
+    { loc: "/movies/tvshows/trending", changefreq: "daily", priority: 0.9 },
+    { loc: "/movies/tvshows/tvshowspage/1", changefreq: "daily", priority: 0.8 },
+    { loc: "/movies/tvshows/tvshowspage/2", changefreq: "daily", priority: 0.7 },
+    { loc: "/movies/tvshows/upcoming-tvshows/1", changefreq: "weekly", priority: 0.7 },
     // Games listing pages
-    { loc: "/Games/page/1", changefreq: "weekly", priority: 0.8 },
-    { loc: "/Games/page/2", changefreq: "weekly", priority: 0.7 },
-    { loc: "/Games/page/3", changefreq: "weekly", priority: 0.7 },
+    { loc: "/games/page/1", changefreq: "weekly", priority: 0.8 },
+    { loc: "/games/page/2", changefreq: "weekly", priority: 0.7 },
+    { loc: "/games/page/3", changefreq: "weekly", priority: 0.7 },
   ],
 };

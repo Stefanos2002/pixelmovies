@@ -72,7 +72,7 @@ const ViewWatchlist = () => {
   }, [session?.user?.email]); // Only re-run this effect if the session changes\
 
   return (
-    <div className="back-img overflow-auto relative w-full h-full flex flex-col text-center items-center">
+    <div className="back-img overflow-auto relative w-full min-h-dvh flex flex-col text-center items-center">
       <Link href={`/`} className="w-full pointer-events-none">
         <h2 className=" ml-4 mt-4 text-white pointer-events-auto text-2xl transition duration-100 p-1 rounded-full hover:scale-110">
           &#8618; Home
@@ -113,8 +113,8 @@ const ViewWatchlist = () => {
                       <Link
                         href={
                           item.media_type === "movie"
-                            ? `/Movies/${item.id}`
-                            : `/Movies/TVShows/${item.id}`
+                            ? `/movies/${item.id}`
+                            : `/movies/tvshows/${item.id}`
                         }
                         className="w-96 h-full"
                       >
@@ -147,7 +147,10 @@ const ViewWatchlist = () => {
           )}
         </div>
       </div>
-      <Footer />
+      {/* mt-auto pins the footer to the bottom when content is short */}
+      <div className="mt-auto w-full">
+        <Footer />
+      </div>
     </div>
   );
 };

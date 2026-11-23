@@ -111,8 +111,8 @@ const Search = ({ setSearchVisible }: SearchProps) => {
         router.push(
           `/${
             results[focusedIndex].media_type === "movie"
-              ? "Movies"
-              : "Movies/TVShows"
+              ? "movies"
+              : "movies/tvshows"
           }/${results[focusedIndex].id}`
         );
         setSearchVisible(false);
@@ -134,7 +134,7 @@ const Search = ({ setSearchVisible }: SearchProps) => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      router.push(`/Movies/Search/${searchTerm}`); //An ginei submit kanoume redirect ton xrhsth sto dynamiko page gia ta apotelesmata tou search
+      router.push(`/movies/search/${searchTerm}`); //An ginei submit kanoume redirect ton xrhsth sto dynamiko page gia ta apotelesmata tou search
       setSearchVisible(false); //kai kleinoume to search
     }
     //To fetch kaleitai aytomata kathe fora pou allazei to searchTerm
@@ -165,7 +165,7 @@ const Search = ({ setSearchVisible }: SearchProps) => {
               <Link
                 key={result.id}
                 href={`/${
-                  result.media_type === "movie" ? "Movies" : "Movies/TVShows" //the path changes based on the media type
+                  result.media_type === "movie" ? "movies" : "movies/tvshows" //the path changes based on the media type
                 }/${result.id}`}
                 onClick={() => setSearchVisible(false)}
                 onMouseEnter={() => setFocusedIndex(index)} // Update focusedIndex on hover

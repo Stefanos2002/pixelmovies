@@ -32,7 +32,7 @@ const GameDets = async ({ params }: { params: any }) => {
   }
   return (
     <div className="flex w-full flex-col">
-      <div className="flex pt-20 items-stretch max-[923px]:flex-col h-full gap-5 px-6">
+      <div className="flex pt-20 items-stretch max-[923px]:flex-col h-full gap-5 sm:px-6 px-4">
         <div className="flex w-[50vw] max-[923px]:w-full h-full flex-col relative">
           <div className="relative w-full aspect-[16/9]">
             <Image
@@ -45,22 +45,18 @@ const GameDets = async ({ params }: { params: any }) => {
           </div>
           <div className="relative flex flex-col -top-10">
             <div className="fade-bottom"></div>
-            <div className="flex flex-col gap-2 text-lg px-4 py-6 text-center font-inter text-white bg-black rounded-b-xl h-full">
+            <div className="flex flex-col gap-2 text-base sm:text-lg px-4 py-6 text-center font-inter text-white bg-black rounded-b-xl h-full">
               <div className="flex flex-row gap-4 items-stretch justify-between">
-                <span className="lg:text-md min-[450px]:text-lg text-md font-bold">
-                  Name:
-                </span>
-                <span className="flex gap-1 text-end text-white lg:text-md min-[450px]:text-lg text-md">
+                <span className="text-base sm:text-lg font-bold">Name:</span>
+                <span className="flex gap-1 text-end text-white text-base sm:text-lg">
                   {game.name}
                 </span>
               </div>
               <div className="flex flex-row gap-4 items-center justify-between">
-                <span className="lg:text-md min-[450px]:text-lg text-md font-bold">
-                  Rating:
-                </span>
+                <span className="text-base sm:text-lg font-bold">Rating:</span>
                 {game.rating > 0 ? (
                   <span
-                    className="flex gap-2 items-center lg:text-md min-[450px]:text-lg text-md font-semibold"
+                    className="flex gap-2 items-center text-base sm:text-lg font-semibold"
                     style={{
                       color:
                         Math.round(game.rating * 20) >= 80
@@ -78,11 +74,11 @@ const GameDets = async ({ params }: { params: any }) => {
                 )}
               </div>
               <div className="flex flex-row gap-4 items-stretch justify-between">
-                <span className="lg:text-md min-[450px]:text-lg text-md font-bold">
+                <span className="text-base sm:text-lg font-bold">
                   Release date:{" "}
                 </span>
                 {game.released ? (
-                  <span className="flex gap-1 text-end text-white lg:text-md min-[450px]:text-lg text-md">
+                  <span className="flex gap-1 text-end text-white text-base sm:text-lg">
                     {game.released}
                   </span>
                 ) : (
@@ -90,10 +86,8 @@ const GameDets = async ({ params }: { params: any }) => {
                 )}
               </div>
               <div className="flex flex-row gap-4 items-stretch justify-between">
-                <span className="lg:text-md min-[450px]:text-lg text-md font-bold">
-                  Genres:
-                </span>
-                <span className="text-end lg:text-md min-[450px]:text-lg text-md">
+                <span className="text-base sm:text-lg font-bold">Genres:</span>
+                <span className="text-end text-base sm:text-lg">
                   {game.genres && game.genres.length > 0 ? (
                     game.genres.map(
                       (genre: { name: string }, index: number) => (
@@ -110,10 +104,10 @@ const GameDets = async ({ params }: { params: any }) => {
                 </span>
               </div>
               <div className="flex flex-row gap-4 items-stretch justify-between">
-                <span className="lg:text-md min-[450px]:text-lg text-md font-bold">
+                <span className="text-base sm:text-lg font-bold">
                   Platforms:
                 </span>
-                <span className="text-end lg:text-md min-[450px]:text-lg text-md">
+                <span className="text-end text-base sm:text-lg">
                   {game.platforms && game.platforms.length > 0 ? (
                     game.platforms.map(
                       (
@@ -133,11 +127,11 @@ const GameDets = async ({ params }: { params: any }) => {
                 </span>
               </div>
               <div className="flex flex-row gap-4 items-stretch justify-between">
-                <span className="lg:text-md min-[450px]:text-lg text-md font-bold">
+                <span className="text-base sm:text-lg font-bold">
                   Playtime:
                 </span>
                 {game.playtime && game.playtime > 0 ? (
-                  <span className="lg:text-md min-[450px]:text-lg text-md">
+                  <span className="text-base sm:text-lg">
                     about {game.playtime}h
                   </span>
                 ) : (
@@ -148,7 +142,7 @@ const GameDets = async ({ params }: { params: any }) => {
                 <>
                   <div className="mt-4 gap-4 flex sm:flex-row sm:text-lg text-md flex-col w-full justify-between items-center">
                     <Link
-                      href={`/Games/${game.slug}/review`}
+                      href={`/games/${game.slug}/review`}
                       className="bg-neutral-600 hover:bg-neutral-800 py-1 px-4 rounded-xl transition-all duration-200 hover:scale-105"
                     >
                       Add a review
@@ -168,13 +162,23 @@ const GameDets = async ({ params }: { params: any }) => {
         </div>
 
         {game.description_raw ? (
-          <div className="mb-10 flex flex-col gap-3 border shadow-xl shadow-gray-600 relative w-[50vw] max-[923px]:w-full overflow-y-auto bg-neutral-900 p-6 rounded-2xl transition-[width] ease-in-out duration-300">
-            <h2 className="text-white text-xl font-semibold border-b border-neutral-700 pb-2 tracking-wide">
-              About
-            </h2>
-            <p className="leading-[1.8rem] text-neutral-300 text-md tracking">
-              {cleanDescription(game.description_raw)}
-            </p>
+          // Outer box takes its height from the left panel (row stretch) on desktop,
+          // and a fixed height on mobile; the absolute inner box never adds height.
+          <div className="relative mb-10 w-[50vw] max-[923px]:w-full max-[923px]:h-[28rem] min-h-[20rem]">
+            <div className="absolute inset-0 flex flex-col gap-3 border shadow-xl shadow-gray-600 bg-neutral-900 p-6 max-sm:p-4 rounded-2xl">
+              <h2 className="shrink-0 text-white text-xl font-semibold border-b border-neutral-700 pb-2 tracking-wide">
+                About
+              </h2>
+              <div className="flex-1 min-h-0 overflow-y-auto pr-3 space-y-4 text-neutral-300 text-[15px] sm:text-base leading-7 break-words [scrollbar-width:thin] [scrollbar-color:#525252_transparent]">
+                {cleanDescription(game.description_raw)
+                  .split(/\n+/)
+                  .map((p) => p.trim())
+                  .filter(Boolean)
+                  .map((p, i) => (
+                    <p key={i}>{p}</p>
+                  ))}
+              </div>
+            </div>
           </div>
         ) : (
           <span>No Description Yet For This Game</span>

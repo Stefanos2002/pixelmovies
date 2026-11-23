@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Recommendations from "@/app/Components/Movie-components/Recommendations";
 import { FaStar } from "react-icons/fa6";
 import AddToWatchlistId from "@/app/Components/Movie-components/AddToWatchlistId";
@@ -19,13 +21,34 @@ const getMovieDetails = async (id: string) => {
   const movieWithMediaType = {
     ...data,
     media_type: "movie",
-  }; 
+  };
+ 
 
   return movieWithMediaType;
 };
 
+// SEO: per-title metadata; unknown ids become a real 404
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const item: any = await getMovieDetails(params.id.toString());
+  if (!item?.id) notFound();
+  const year = item.release_date?.slice(0, 4);
+  const title = `${item.title}${year ? ` (${year})` : ""}`;
+  const description =
+    item.overview?.slice(0, 155) || `Reviews and info for ${item.title} on Pixel Movies.`;
+  const image = item.poster_path ? `${imageURL}${item.poster_path}` : undefined;
+  return {
+    title,
+    description,
+    alternates: { canonical: `/movies/${params.id}` },
+    openGraph: { title, description, type: "video.movie", images: image ? [image] : [] },
+    twitter: { card: "summary_large_image", title, description, images: image ? [image] : [] },
+  };
+}
+
+
 const MovieDetailsData = async ({ params }: { params: MovieDetails }) => {
   const movie: MovieDetails = await getMovieDetails(params.id.toString());
+  if (!movie?.id) notFound();
   const currentDate = new Date().toISOString().split("T")[0];
 
   return (
@@ -77,7 +100,7 @@ const MovieDetailsData = async ({ params }: { params: MovieDetails }) => {
         <div className="md:ml-40 lg:ml-[20rem] lg:mt-10 flex gap-2">
           <AddToWatchlistId id={Number(params.id)} media_type="movie" />
           <Link
-            href={`/Movies/${params.id}/reviews`}
+            href={`/movies/${params.id}/reviews`}
             className="bg-[#6a7f97] text-center p-2 transition duration-200 hover:opacity-75 text-white rounded-sm"
           >
             Write a review

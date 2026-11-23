@@ -14,7 +14,7 @@ const Cards = ({ movieData, upcoming, movieResultData }: MovieProps ) => {
       {movieResultData.map((item) => (
         <Link
           key={item.id}
-          href={`/Movies/${item.id}`}
+          href={`/movies/${item.id}`}
           className="hover:scale-110 hover:z-9 md:hover:border lg:hover:border md:hover:shadow-2xl lg:hover:shadow-2xl card-link lg:hover:shadow-gray-600 md:hover:shadow-gray-600 transition w-[90%] md:w-full lg:w-full h-1/2 md:h-full lg:h-full md:mb-0 lg:mb-0 duration-500 ease-in-out"
         >
           {/* Container for the image and content */}
@@ -49,7 +49,7 @@ const Cards = ({ movieData, upcoming, movieResultData }: MovieProps ) => {
             className="hover:scale-110 hover:border hover:z-9 hover:shadow-2xl card-link hover:shadow-gray-600 transition w-[90%] md:w-full lg:w-full h-1/2 md:h-full lg:h-full mb-52 md:mb-0 lg:mb-0 duration-500 ease-in-out"
           >
             {/* Image container */}
-            <Link href={`/Movies/${item.id}`}>
+            <Link href={`/movies/${item.id}`}>
               {/* p-10 */}
               <div className="w-full h-full md:w-full md:h-64 lg:w-full lg:h-96 relative">
                 <img
@@ -66,7 +66,7 @@ const Cards = ({ movieData, upcoming, movieResultData }: MovieProps ) => {
             {/* Text container */}
             <div className="bg-[#4c545b] flex flex-col md:h-44 lg:h-52 cards h-full card-text-container">
               <Link
-                href={`/Movies/${item.id}`}
+                href={`/movies/${item.id}`}
                 className="flex lg:ml-4 h-10 text-white justify-between"
               >
                 <div className="w-[55%]">
@@ -85,7 +85,7 @@ const Cards = ({ movieData, upcoming, movieResultData }: MovieProps ) => {
                   <AddToWatchlist id={item.id} media_type="movie" />
                 </div>
                 <span className="text-white justify-center text-center">
-                  <Link href={`/Movies/${item.id}/reviews`}>Review</Link>
+                  <Link href={`/movies/${item.id}/reviews`}>Review</Link>
                 </span>
               </div>
             </div>

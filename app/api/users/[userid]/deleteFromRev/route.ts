@@ -1,9 +1,12 @@
 // pages/api/users/[userid].ts
 import { removeReview } from "@/app/User Collection/connection";
 import { NextRequest, NextResponse } from "next/server";
+import { requireOwner } from "@/authDbConnection/requireUser";
 
 export async function DELETE(req: NextRequest, { params }: { params: { userid: string } }) {
   const userid = params.userid;
+  const auth = await requireOwner({ userId: userid });
+  if (auth instanceof NextResponse) return auth;
   const { reviewId } = await req.json();
 
   try {

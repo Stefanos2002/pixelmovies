@@ -46,7 +46,7 @@ const GameList: React.FC<GameListProps> = ({ paginatedGames }) => {
         {paginatedGames.map((item, index) => (
           <li key={`${item._id}-${index}`}>
             <Link
-              href={`/Games/${item.slug}`}
+              href={`/games/${item.slug}`}
               className="flex flex-col group rounded-lg overflow-hidden border border-white/20 hover:border-white/60 hover:scale-[1.02] transition-all duration-300"
             >
               <div className="relative w-full aspect-video flex-shrink-0">

@@ -1,15 +1,22 @@
 import clientPromise from "@/authDbConnection/mongo/page";
+import { requireOwner } from "@/authDbConnection/requireUser";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest, { params }: { params: { email: string } }) {
-  const { email } = params;
+  const email = decodeURIComponent(params.email);
+
+  // Profiles (id, library, reviews) are private: only return your own
+  const auth = await requireOwner({ email });
+  if (auth instanceof NextResponse) return auth;
+
   try {
     const client = await clientPromise;
-    const db = client.db("connectdb");
+    // Same DB as the rest of the app (the one named in MONGODB_URI)
+    const db = client.db();
     const userCollection = db.collection("users");
 
     const existingUser = await userCollection.findOne(
-      { email },
+      { _id: auth._id },
       { projection: { password: 0, verificationToken: 0 } }
     );
     if (!existingUser) {

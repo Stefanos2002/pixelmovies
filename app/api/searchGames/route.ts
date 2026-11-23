@@ -1,6 +1,8 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/authDbConnection/mongo/page";
+import { isMainstreamGame } from "@/app/Game Collection/functions";
+import { PostResult } from "@/app/Constants/constants";
 
 const EDITION_KEYWORDS_PATTERN = [
   "director.?s cut",
@@ -21,6 +23,17 @@ const EDITION_KEYWORDS_PATTERN = [
   "redux",
 ].join("|");
 
+const SEARCH_ALIASES: Record<string, string> = {
+  gta: "grand theft auto",
+  cod: "call of duty",
+  rdr: "red dead redemption",
+  re: "resident evil",
+  ac: "assassin's creed",
+  gow: "god of war",
+  botw: "breath of the wild",
+  totk: "tears of the kingdom",
+};
+
 function buildFlexibleRegex(query: string): string {
   const normalized = query
     .replace(/[^\w\s]/g, " ")
@@ -32,16 +45,22 @@ function buildFlexibleRegex(query: string): string {
     const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     // Allow common word-separator chars between each letter so that
     // "spiderman" matches "Spider-Man", "ironman" matches "Iron Man", etc.
-    return escaped.split("").join("[\\s\\-'.:]*");
+    // Includes curly apostrophes — RAWG names often use "Marvel’s".
+    return escaped.split("").join("[\\s\\-'’‘.:]*");
   });
 
   // Between words allow any combination of separators + articles
-  return wordPatterns.join("[\\s:,\\-.']*");
+  return wordPatterns.join("[\\s:,\\-.'’‘]*");
 }
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const query = searchParams.get("q")?.toLowerCase().trim();
+  const rawQuery = searchParams.get("q")?.toLowerCase().trim();
+  // Common abbreviations people type that never appear in RAWG names
+  const query = rawQuery?.replace(
+    /^(gta|cod|rdr|re|ac|gow|botw|totk)\b/,
+    (abbr) => SEARCH_ALIASES[abbr] ?? abbr,
+  );
 
   if (!query || query.length < 2) {
     return NextResponse.json({ results: [] }, { status: 200 });
@@ -81,29 +100,32 @@ export async function GET(req: NextRequest) {
         rating: 1,
         metacritic: 1,
         ratings_count: 1,
+        tba: 1,
+        genres: 1,
+        esrb_rating: 1,
       })
-      .limit(30)
+      // Generous cap: filtering happens below, so a small limit here could
+      // drop the very game the user is looking for
+      .limit(300)
       .toArray();
 
-    const cutoff = new Date();
-    cutoff.setMonth(cutoff.getMonth() - 18);
-    const stripPunct = (s: string) => s.toLowerCase().replace(/[\s\-'.:,]+/g, "");
+    const stripPunct = (s: string) =>
+      s.toLowerCase().replace(/[\s\-'’‘.:,]+/g, "");
     const q = stripPunct(query);
-    const sorted = games.filter((g) => {
-      const releaseDate = new Date(g.released);
-      const isRecent = releaseDate >= cutoff;
-      const minRatings = isRecent ? 15 : 200;
-      if ((g.ratings_count ?? 0) < minRatings) return false;
-      return (g.rating ?? 0) >= 3.8 || (g.metacritic ?? 0) >= 60;
-    }).sort((a, b) => {
+    // Same quality rules as the games list, so search shows what the list shows
+    const sorted = (games as unknown as PostResult[])
+      .filter(isMainstreamGame)
+      .sort((a, b) => {
       const aName = stripPunct(a.name as string);
       const bName = stripPunct(b.name as string);
       const aExact = aName === q;
       const bExact = bName === q;
       if (aExact !== bExact) return aExact ? -1 : 1;
-      const aStarts = aName.startsWith(q);
-      const bStarts = bName.startsWith(q);
-      if (aStarts !== bStarts) return aStarts ? -1 : 1;
+      // Then most popular first, so "spiderman" shows Marvel's Spider-Man
+      // before obscure 2000s titles that merely start with the query
+      const popularity =
+        (b.ratings_count ?? 0) - (a.ratings_count ?? 0);
+      if (popularity !== 0) return popularity;
       return aName.localeCompare(bName);
     });
 

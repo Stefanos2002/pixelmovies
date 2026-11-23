@@ -28,7 +28,7 @@ const FilteredByGenre = async ({
         <TVShowCards tvShowData={tvShowData} />
       </div>
       <div className="">
-        <MoviePages page={Number(params.page)} link={`/Movies/TVShows/Genres/${params.genre}`} />
+        <MoviePages page={Number(params.page)} link={`/movies/tvshows/genres/${params.genre}`} />
       </div>
     </div>
   );

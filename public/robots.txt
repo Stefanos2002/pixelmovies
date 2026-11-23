@@ -5,8 +5,8 @@ Allow: /
 # *
 User-agent: *
 Disallow: /api/
-Disallow: /Account/
-Disallow: /Authentication/
+Disallow: /account/
+Disallow: /authentication/
 
 # Host
 Host: https://www.pixelmovies.gr

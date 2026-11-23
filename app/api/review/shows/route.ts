@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { addShowReview } from "@/app/User Collection/connection";
 import { NextRequest, NextResponse } from "next/server";
+import { requireOwner } from "@/authDbConnection/requireUser";
 
 //Function to add the rating to the TMDB API
 async function postRatingToTmdb(
@@ -10,7 +11,8 @@ async function postRatingToTmdb(
 ) {
   try {
     const response = await fetch(
-      `https://api.themoviedb.org/3/movie/${showId}/rating?${process.env.MOVIE_API_KEY}&guest_session_id=${guestSessionId}`,
+      // TV ratings live under /tv/, not /movie/ (was rating the wrong title)
+      `https://api.themoviedb.org/3/tv/${showId}/rating?${process.env.MOVIE_API_KEY}&guest_session_id=${guestSessionId}`,
       {
         method: "POST",
         headers: {
@@ -38,6 +40,8 @@ async function postRatingToTmdb(
 export async function POST(req: NextRequest) {
   try {
     const { userId, showId, showName, review, rating } = await req.json(); //We take the userId, movieid, movieName, review, and rating from the form
+    const auth = await requireOwner({ userId });
+    if (auth instanceof NextResponse) return auth;
 
     //we store the review in the database
     const result = await addShowReview(

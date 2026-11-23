@@ -76,7 +76,7 @@ const WriteReview: React.FC<Info> = ({ game }) => {
       if (response.ok) {
         setIsSubmitted(true);
         setTimeout(() => {
-          router.push(`/Games/${game.slug}`);
+          router.push(`/games/${game.slug}`);
           router.refresh();
         }, 2000);
       } else {
@@ -107,7 +107,7 @@ const WriteReview: React.FC<Info> = ({ game }) => {
       <div className="flex flex-col items-center pt-8 pb-12 px-4 flex-1">
         <div className="w-full max-w-2xl mb-4">
           <Link
-            href={`/Games/${game.slug}`}
+            href={`/games/${game.slug}`}
             className="text-neutral-400 hover:text-white text-md transition-colors duration-200"
           >
             ← Back to {game.name}

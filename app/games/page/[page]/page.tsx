@@ -1,4 +1,5 @@
 import React from "react";
+import type { Metadata } from "next";
 import Buttons from "@/app/Components/Game-components/Buttons";
 import MainPage from "@/app/Components/Game-components/MainPage";
 import NavBar from "@/app/Components/Game-components/NavBar";
@@ -22,6 +23,31 @@ import Footer from "@/app/Components/Footer";
 interface PageProps {
   params: { page: string };
   searchParams: { console?: string; genre?: string; sort?: string; search?: string };
+}
+
+const PLATFORM_NAMES: Record<string, string> = {
+  pc: "PC",
+  playstation: "PlayStation",
+  xbox: "Xbox",
+  nintendo: "Nintendo",
+};
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: PageProps): Promise<Metadata> {
+  const page = Number(params.page) || 1;
+  const platform = searchParams.console
+    ? PLATFORM_NAMES[searchParams.console] ?? searchParams.console
+    : null;
+  const base = platform ? `${platform} Games` : "All Games";
+  return {
+    title: page > 1 ? `${base} – Page ${page}` : base,
+    // Sorted/filtered/search variants point to the plain page so Google
+    // doesn't index dozens of near-duplicates; search results aren't indexed
+    alternates: { canonical: `/games/page/${page}` },
+    robots: searchParams.search ? { index: false, follow: true } : undefined,
+  };
 }
 
 const Posts = async ({ params, searchParams }: PageProps) => {
@@ -66,7 +92,7 @@ const Posts = async ({ params, searchParams }: PageProps) => {
           </div>
           <GameList paginatedGames={paginatedGames} />
           <Buttons
-            link="/Games/page"
+            link="/games/page"
             page={page}
             gamesLength={gameData.length}
             consoleName={consoleName}

@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { updateUserImage } from "@/app/User Collection/connection";
 import { NextRequest, NextResponse } from "next/server";
+import { requireOwner } from "@/authDbConnection/requireUser";
 
 // import { connectToDatabase } from "@/utils/mongodb"; // A helper function to connect to your MongoDB
 // import User from "@/models/User"; // Your Mongoose User model
@@ -8,6 +9,8 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const { email, profilePicture } = await req.json();
+    const auth = await requireOwner({ email });
+    if (auth instanceof NextResponse) return auth;
 
     // Ensure we have both email and profilePicture from the client
     if (!email || !profilePicture) {

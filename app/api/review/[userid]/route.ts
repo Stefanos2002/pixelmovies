@@ -1,6 +1,7 @@
 // pages/api/review.ts
 import { addUserReview } from "@/app/User Collection/connection";
 import { NextRequest, NextResponse } from "next/server";
+import { requireOwner } from "@/authDbConnection/requireUser";
 
 //adding a review in Games
 export async function POST(
@@ -8,6 +9,8 @@ export async function POST(
   { params }: { params: { userid: string } }
 ) {
   const userid = params.userid;
+  const auth = await requireOwner({ userId: userid });
+  if (auth instanceof NextResponse) return auth;
   try {
     const { gameId, gameName, selectedReaction, reviewText, date } =
       await req.json();

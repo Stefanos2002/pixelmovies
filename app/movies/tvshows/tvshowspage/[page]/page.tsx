@@ -23,7 +23,7 @@ const Page = async ({ params }: { params: TVShows }) => {
         <TVShowCards tvShowData={tvShowData} />
       </div>
       <div className="">
-        <MoviePages page={Number(params.page)} link={"/Movies/TVShows/TVShowsPage"} />
+        <MoviePages page={Number(params.page)} link={"/movies/tvshows/tvshowspage"} />
       </div>
     </div>
   );

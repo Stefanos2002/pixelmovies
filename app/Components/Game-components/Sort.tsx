@@ -29,7 +29,7 @@ const Sort: React.FC<SortProps> = ({ consoleName, genre }) => {
     if (consoleName) params.set("console", consoleName);
     if (genre) params.set("genre", genre);
     params.set("sort", sortValue);
-    return `/Games/page/1?${params.toString()}`;
+    return `/games/page/1?${params.toString()}`;
   };
 
   const isConsole = Boolean(consoleName);

@@ -52,7 +52,7 @@ const Movies = () => {
 
   return (
     <Link
-      href={"/Movies/moviePage/1"}
+      href={"/movies/moviepage/1"}
       className="relative group text-6xl hover:scale-105 justify-center flex lg:w-2/4 w-full h-screen overflow-hidden transition duration-500 ease-in-out cursor-pointer"
       // onMouseEnter={handleMouseEnter}
       // onMouseLeave={handleMouseLeave}

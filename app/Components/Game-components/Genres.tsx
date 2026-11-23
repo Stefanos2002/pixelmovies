@@ -34,7 +34,7 @@ const Genres: React.FC<GenresProps> = ({ genres, consoleName }) => {
     const params = new URLSearchParams();
     if (consoleName) params.set("console", consoleName);
     params.set("genre", slug);
-    return `/Games/page/1?${params.toString()}`;
+    return `/games/page/1?${params.toString()}`;
   };
 
   return (

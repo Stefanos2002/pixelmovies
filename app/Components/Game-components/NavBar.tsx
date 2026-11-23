@@ -3,7 +3,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { FaXbox, FaPlaystation } from "react-icons/fa";
 import { BsNintendoSwitch } from "react-icons/bs";
 import { SiEpicgames } from "react-icons/si";
-import { IoIosArrowDown } from "react-icons/io";
 import { AiOutlineSearch, AiOutlineClose } from "react-icons/ai";
 import Link from "next/link";
 import Logout from "../Logout";
@@ -18,8 +17,8 @@ const SearchBar = dynamic(() => import("./SearchBar"), {
     <div className="h-10 w-full max-w-xl rounded-lg bg-white/5 animate-pulse" />
   ),
 });
-import GlareHover from "@/components/GlareHover";
-import { TbMenuDeep } from "react-icons/tb";
+import { TbMenuDeep, TbLayoutGrid, TbArrowLeft } from "react-icons/tb";
+import { usePathname, useRouter } from "next/navigation";
 
 const logos = [
   { component: <FaXbox />, key: 3, slug: "xbox" },
@@ -34,21 +33,22 @@ const NavBar = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const { data: session } = useSession();
+  const pathname = usePathname();
+  const router = useRouter();
   const profileRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Close each dropdown independently when clicking outside of it.
+    // (Previously both refs had to exist, so logged-out users could never
+    // close the burger menu by clicking away.)
     const mouseHandler = (e: MouseEvent) => {
-      if (
-        profileRef.current &&
-        !profileRef.current.contains(e.target as Node) &&
-        menuRef.current &&
-        !menuRef.current.contains(e.target as Node)
-      ) {
-        setTimeout(() => {
-          setShowProfile(false);
-          setShowMenu(false);
-        }, 50);
+      const target = e.target as Node;
+      if (menuRef.current && !menuRef.current.contains(target)) {
+        setShowMenu(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(target)) {
+        setShowProfile(false);
       }
     };
     document.addEventListener("mousedown", mouseHandler);
@@ -77,46 +77,54 @@ const NavBar = () => {
   const toggleProfile = () => setShowProfile((p) => !p);
   const closeProfile = () => setShowProfile(false);
 
+  // Show a back button on game detail pages (/games/[name], /games/[name]/review)
+  const segments = pathname?.split("/").filter(Boolean) ?? [];
+  const showBack =
+    segments[0] === "games" && segments.length >= 2 && segments[1] !== "page";
+
+  const goBack = () => {
+    // Fall back to the games list if the user landed here directly
+    if (window.history.length > 1) router.back();
+    else router.push("/games/page/1");
+  };
+
   return (
     <nav className="w-full flex justify-between items-center sticky top-0 bg-black h-20 z-20">
       {/* Left: logo + avatar */}
-      <div className="pl-4 flex items-center h-full gap-4 shrink-0 pointer-events-none">
+      <div className="pl-2 flex items-center h-full gap-1 sm:gap-2 shrink-0 pointer-events-none">
+        {showBack && (
+          <button
+            onClick={goBack}
+            aria-label="Go back"
+            title="Go back"
+            className="pointer-events-auto text-white text-2xl sm:text-3xl p-1.5 rounded-full hover:bg-neutral-800 transition-all duration-200"
+          >
+            <TbArrowLeft />
+          </button>
+        )}
         <Link
           href="/"
           className="pointer-events-auto flex items-center justify-center"
         >
-          <GlareHover
-            glareColor="#ffffff"
-            glareOpacity={0.4}
-            glareAngle={-30}
-            glareSize={300}
-            transitionDuration={800}
-            height="60px"
-            width="60px"
-            borderRadius="100%"
-            background="none"
-            playOnce={false}
-          >
-            <Image
-              src={siteLogo}
-              alt="site_logo"
-              width={56}
-              height={56}
-              className="object-contain rounded-full"
-            />
-          </GlareHover>
+          <Image
+            src={siteLogo}
+            alt="site_logo"
+            width={200}
+            height={50}
+            className="object-contain mt-2 max-[400px]:w-[150px] h-auto w-[200px]"
+          />
         </Link>
       </div>
 
       {/* Center: search bar — hidden below md (768px) */}
-      <div className="hidden md:flex flex-1 justify-center px-4">
+      <div className="hidden min-[930px]:flex flex-1 justify-center px-4">
         <SearchBar />
       </div>
 
       {/* Right: search icon (mobile only), register, hamburger */}
-      <div className="flex items-center gap-2 pr-4 shrink-0" ref={menuRef}>
+      <div className="flex items-center gap-1 pr-2 shrink-0" ref={menuRef}>
         <button
-          className="md:hidden text-white text-2xl p-2 rounded-full hover:bg-neutral-800 transition-all duration-200"
+          className="min-[930px]:hidden text-white text-2xl p-2 rounded-full hover:bg-neutral-800 transition-all duration-200"
           onClick={() => setShowSearch(true)}
           aria-label="Open search"
         >
@@ -124,8 +132,8 @@ const NavBar = () => {
         </button>
 
         {!session ? (
-          <Link href="/Authentication/Signup">
-            <button className="text-neutral-900 tracking-wide border bg-neutral-200 sm:text-lg text-sm transition delay-50 p-2 rounded-2xl hover:scale-105">
+          <Link href="/authentication/signup">
+            <button className="text-neutral-900 tracking-tight border bg-neutral-200 sm:text-lg text-sm transition delay-50 p-2 rounded-2xl hover:scale-105">
               Register
             </button>
           </Link>
@@ -155,7 +163,7 @@ const NavBar = () => {
               onClick={closeProfile}
             >
               <ul className="py-2 divide-y text-black">
-                <Link href="/Account/info">
+                <Link href="/account/info">
                   <li className="px-4 py-3 hover:bg-gray-100 cursor-pointer">
                     Profile
                   </li>
@@ -183,7 +191,12 @@ const NavBar = () => {
           } bg-black w-28 py-3 absolute z-30 right-0 top-16 transition-all duration-300 ease-in-out overflow-hidden rounded-b-lg gap-5 flex items-center justify-center flex-col`}
         >
           {logos.map((logo) => (
-            <Link key={logo.key} href={`/Games/page/1?console=${logo.slug}`}>
+            <Link
+              key={logo.key}
+              aria-label={logo.slug}
+              title={logo.slug}
+              href={`/games/page/1?console=${logo.slug}`}
+            >
               <div
                 className="text-stone-200 sm:text-3xl text-2xl transition delay-50 p-2 rounded-full hover:scale-110"
                 onClick={closeDropdown}
@@ -194,7 +207,7 @@ const NavBar = () => {
           ))}
           {session && (
             <div className="min-[900px]:hidden flex flex-col items-center gap-5">
-              <Link href="/Account/info">
+              <Link href="/account/info">
                 <div
                   className="pointer-events-auto flex flex-row items-center gap-1 cursor-pointer hover:brightness-75"
                   onClick={toggleProfile}
@@ -211,13 +224,14 @@ const NavBar = () => {
               </Link>
             </div>
           )}
-          <Link href="/Games/page/1">
-            <button
-              className="font-bold text-white text-lg transition delay-50 p-2 rounded-full hover:scale-105"
-              onClick={closeDropdown}
-            >
-              All Games
-            </button>
+          <Link
+            href="/games/page/1"
+            aria-label="All games"
+            title="All games"
+            onClick={closeDropdown}
+            className="text-stone-200 sm:text-3xl text-2xl transition delay-50 p-2 rounded-full hover:scale-110"
+          >
+            <TbLayoutGrid />
           </Link>
         </ul>
       </div>

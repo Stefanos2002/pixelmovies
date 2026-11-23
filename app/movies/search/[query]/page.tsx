@@ -71,7 +71,7 @@ const searchPage = async ({ params }: any) => {
             {/* Image container */}
             <Link
               href={`/${
-                item.media_type === "tv" ? "Movies/TVShows" : "Movies"
+                item.media_type === "tv" ? "movies/tvshows" : "movies"
               }/${item.id}`}
             >
               <div className="w-full h-full md:w-full md:h-64 lg:w-full lg:h-96 relative">
@@ -87,7 +87,7 @@ const searchPage = async ({ params }: any) => {
             <div className="bg-[#4c545b] flex flex-col md:h-44 lg:h-52 cards h-full card-text-container">
               <Link
                 href={`/${
-                  item.media_type === "tv" ? "Movies/TVShows" : "Movies"
+                  item.media_type === "tv" ? "movies/tvshows" : "movies"
                 }/${item.id}`}
                 className="flex lg:ml-4 h-10 text-white justify-between"
               >
@@ -113,7 +113,7 @@ const searchPage = async ({ params }: any) => {
                   <AddToWatchlist id={item.id} media_type={item.media_type} />
                 </div>
                 <span className="text-white justify-center text-center">
-                  <Link href={ item.media_type === "movie" ? `/Movies/${item.id}/reviews` : `/Movies/TVShows/${item.id}/reviews`}>Review</Link>
+                  <Link href={ item.media_type === "movie" ? `/movies/${item.id}/reviews` : `/movies/tvshows/${item.id}/reviews`}>Review</Link>
                 </span>
               </div>
             </div>

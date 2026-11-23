@@ -63,23 +63,9 @@ export const metadata: Metadata = {
       "Pixel Movies provides the latest reviews and ratings for movies and video games.",
   },
   icons: {
-    icon: [
-      {
-        url: "/assets/images/site-logo-cropped.png",
-        sizes: "32x32",
-        type: "image/png",
-      },
-      {
-        url: "/assets/images/site-logo-cropped.png",
-        sizes: "48x48",
-        type: "image/png",
-      },
-      {
-        url: "/assets/images/site-logo-cropped.png",
-        sizes: "672x672",
-        type: "image/png",
-      },
-    ],
+    // Square play-button mark cropped from logo.webp
+    icon: [{ url: "/assets/images/icon.png", sizes: "512x512", type: "image/png" }],
+    apple: [{ url: "/assets/images/apple-icon.png", sizes: "180x180", type: "image/png" }],
   },
 };
 
@@ -103,7 +89,7 @@ export default function RootLayout({
                 "@type": "Organization",
                 name: "Pixel Movies",
                 url: "https://www.pixelmovies.gr",
-                logo: "https://www.pixelmovies.gr/assets/images/site-logo-cropped.png",
+                logo: "https://www.pixelmovies.gr/assets/images/icon.png",
                 sameAs: [
                   "https://www.linkedin.com/in/stefanos-kaloulis-b4ba792b6",
                   "https://www.linkedin.com/in/apostolos-kyrgidis/",

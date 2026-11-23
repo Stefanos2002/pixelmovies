@@ -1,9 +1,12 @@
 // pages/api/users/[userid].ts
 import { removeGame } from "@/app/User Collection/connection";
 import { NextRequest, NextResponse } from "next/server";
+import { requireOwner } from "@/authDbConnection/requireUser";
 
 export async function DELETE(req: NextRequest, { params }: { params: { userid: string } }) {
   const userid = params.userid;
+  const auth = await requireOwner({ userId: userid });
+  if (auth instanceof NextResponse) return auth;
   const { libraryId } = await req.json();
 
   try {

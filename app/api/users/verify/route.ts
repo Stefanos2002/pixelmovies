@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     if (status === 200 && user) {
       const newToken = generateToken();
       const baseUrl = `${req.nextUrl.protocol}//${req.nextUrl.host}`;
-      const redirectUrl = new URL(`/Verified?token=${newToken}`, baseUrl).toString();
+      const redirectUrl = new URL(`/verified?token=${newToken}`, baseUrl).toString();
       return NextResponse.redirect(redirectUrl);
     } else {
       return NextResponse.json({ message }, { status: status ?? 400 });

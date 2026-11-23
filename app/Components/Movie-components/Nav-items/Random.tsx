@@ -39,7 +39,7 @@ const Random = () => {
   // Navigate to random movie when randomId updates
   useEffect(() => {
     if (randomId) {
-      router.push(`/Movies/${randomId}`); // Navigate to the random movie page
+      router.push(`/movies/${randomId}`); // Navigate to the random movie page
     }
   }, [randomId, router]);
 

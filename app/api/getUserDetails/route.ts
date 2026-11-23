@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { fetchUserDets } from "@/app/User Collection/connection";
 import { NextRequest, NextResponse } from "next/server";
+import { requireOwner } from "@/authDbConnection/requireUser";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -9,6 +10,9 @@ export async function GET(req: NextRequest) {
   if (!email || typeof email !== "string") {
     return NextResponse.json({ message: "Invalid email" }, { status: 400 });
   }
+
+  const auth = await requireOwner({ email });
+  if (auth instanceof NextResponse) return auth;
 
   try {
     const { _id, profilePicture, library, watchlist } = await fetchUserDets(

@@ -108,7 +108,7 @@ const MovieReview = ({ params }: { params: { id: string } }) => {
         alert(
           `Review added successfully, redirecting to ${movieData?.title} page`
         );
-        router.push(`/Movies/${movieId}`);
+        router.push(`/movies/${movieId}`);
         router.refresh();
       }, 1000);
     } catch (err) {

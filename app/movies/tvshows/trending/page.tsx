@@ -43,7 +43,7 @@ const Trending = async () => {
       <TvFilter />
       <div className="flex justify-end mr-10 mt-2">
         <Link
-          href={"/Movies/Movies-trending"}
+          href={"/movies/movies-trending"}
           className="flex flex-row gap-2 items-center hover:opacity-85 transition duration-200 justify-end p-2 rounded mt-2 cursor-pointer text-[#d1d1d1] bg-[#4c545b] not-search"
         >
           <GiFilmProjector style={{ flexShrink: 0, fontSize: "1.4rem" }} />

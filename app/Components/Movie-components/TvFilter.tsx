@@ -32,8 +32,8 @@ const TvFilter = () => {
   };
 
   const buildGenreFilterLink = () => {
-    if (selectedGenres.length === 0) return "/Movies/TVShows/TVShowsPage/1";
-    return `/Movies/TVShows/Genres/${selectedGenres.join(",")}/1`;
+    if (selectedGenres.length === 0) return "/movies/tvshows/tvshowspage/1";
+    return `/movies/tvshows/genres/${selectedGenres.join(",")}/1`;
   };
 
   const handleClick = () => {

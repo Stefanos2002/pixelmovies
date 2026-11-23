@@ -76,6 +76,7 @@ export interface User {
   user_reviews?: Review[];
   library?: Library[];
   verificationToken?: string;
+  verificationExpires?: Date;
   isVerified?: boolean;
   provider?: string;
   watchlist?: WatchlistItem[];

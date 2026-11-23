@@ -4,7 +4,6 @@ import AccountPageShell from "./AccountPageShell";
 import dynamic from "next/dynamic";
 
 const Popup = dynamic(() => import("../Popup"), { ssr: false });
-import bcrypt from "bcryptjs";
 import { UploadButton } from "@/app/Uploadthing/uploadthing";
 import { signOut } from "next-auth/react";
 import Image from "next/image";
@@ -112,8 +111,8 @@ const AccountInfo = () => {
 
     const updatedData: any = { username: formData.username };
     if (formData.password.trim()) {
-      const hashedPassword = await bcrypt.hash(formData.password, 10);
-      updatedData.password = hashedPassword;
+      // Plain password over HTTPS — the API hashes it (hashing here too made it unusable)
+      updatedData.password = formData.password;
     }
 
     const response = await fetch(`/api/users/${user._id}`, {

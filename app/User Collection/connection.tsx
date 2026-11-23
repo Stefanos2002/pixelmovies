@@ -24,58 +24,106 @@ async function init(): Promise<void> {
   }
 }
 
-export const addUser = async (data: User) => {
-  try {
-    if (!users) await init();
-    if (!users) throw new Error("Users collection is not initialized");
-
-    // Generate a verification token
-    const verificationToken = crypto.randomBytes(32).toString("hex");
-
-    // Destructure username and email from the data
-    const { username, email, password } = data;
-
-    // Check if the username or email already exists
-    const { usernameExists, emailExists } = await checkUserExists(
-      username || "",
-      email
-    );
-
-    if (usernameExists && emailExists) {
-      throw new Error("Username and Email already exist");
-    } else if (usernameExists) {
-      throw new Error("Username already exists");
-    } else if (emailExists) {
-      throw new Error("Email already exists");
-    }
-
-    // Insert the new user data into the MongoDB collection
-    const result = await users.insertOne({
-      username,
-      email,
-      password,
-      profilePicture: "",
-      user_reviews: [],
-      verificationToken,
-      isVerified: false,
-      provider: "credentials",
-    });
-
-    await sendVerificationEmail(email, verificationToken);
-
-    return {
-      message:
-        "User added successfully. Please check your email for verification.",
-      result,
-    };
-  } catch (error) {
-    console.error("Failed to add user:", error);
-    if (error instanceof Error) {
-      throw new Error(`${error.message}`);
-    }
-    // Re-throw the error in case it's not an instance of Error
-    throw error;
+// Errors whose message is safe to show to the user, with the HTTP status to use
+export class AuthError extends Error {
+  status: number;
+  constructor(message: string, status = 400) {
+    super(message);
+    this.status = status;
   }
+}
+
+// Emails are compared case-insensitively (John@Gmail.com === john@gmail.com)
+const CASE_INSENSITIVE = { collation: { locale: "en", strength: 2 } };
+export const normalizeEmail = (email: string) => (email || "").trim().toLowerCase();
+
+const PROVIDER_LABELS: Record<string, string> = {
+  google: "Google",
+  github: "GitHub",
+  credentials: "email & password",
+};
+export const providerLabel = (provider?: string) =>
+  PROVIDER_LABELS[provider || "credentials"] ?? provider ?? "another provider";
+
+// Signup with email & password. `password` is the plain password; it is hashed here.
+export const addUser = async (data: User) => {
+  if (!users) await init();
+  if (!users) throw new Error("Users collection is not initialized");
+
+  const username = (data.username || "").trim();
+  const email = normalizeEmail(data.email);
+  const hashedPassword = await bcrypt.hash(data.password || "", 10);
+
+  const existing = await users.findOne({ email }, CASE_INSENSITIVE);
+  if (existing) {
+    const provider = existing.provider || "credentials";
+    if (provider !== "credentials") {
+      throw new AuthError(
+        `This email is already registered with ${providerLabel(provider)}. Please sign in with ${providerLabel(provider)} instead.`,
+        409
+      );
+    }
+    if (!existing.isVerified) {
+      // Unfinished signup: send a fresh verification link instead of failing
+      const verificationToken = crypto.randomBytes(32).toString("hex");
+      await users.updateOne(
+        { _id: existing._id },
+        { $set: { verificationToken, verificationExpires: tokenExpiry() } }
+      );
+      try {
+        await sendVerificationEmail(email, verificationToken);
+      } catch (error) {
+        console.error("Failed to resend verification email:", error);
+        throw new AuthError(
+          "We couldn't send the verification email. Please try again later.",
+          502
+        );
+      }
+      return {
+        resent: true,
+        message:
+          "This email is registered but not verified yet. We've sent you a new verification link.",
+      };
+    }
+    throw new AuthError(
+      "An account with this email already exists. Try signing in instead.",
+      409
+    );
+  }
+
+  if (await users.findOne({ username })) {
+    throw new AuthError("This username is already taken.", 409);
+  }
+
+  const verificationToken = crypto.randomBytes(32).toString("hex");
+  const result = await users.insertOne({
+    username,
+    email,
+    password: hashedPassword,
+    profilePicture: "",
+    user_reviews: [],
+    verificationToken,
+    verificationExpires: tokenExpiry(),
+    isVerified: false,
+    provider: "credentials",
+  });
+
+  try {
+    await sendVerificationEmail(email, verificationToken);
+  } catch (error) {
+    // Don't leave a half-created account the user can neither verify nor re-create
+    console.error("Failed to send verification email:", error);
+    await users.deleteOne({ _id: result.insertedId });
+    throw new AuthError(
+      "We couldn't send the verification email. Please try again later.",
+      502
+    );
+  }
+
+  return {
+    resent: false,
+    message: "A verification message has been sent to your email.",
+  };
 };
 
 export const addUserOath = async (data: User) => {
@@ -83,9 +131,10 @@ export const addUserOath = async (data: User) => {
     if (!users) await init();
     if (!users) throw new Error("Users collection is not initialized");
 
-    const { name, email } = data;
+    const { name } = data;
+    const email = normalizeEmail(data.email);
 
-    const emailExists = await users.findOne({ email });
+    const emailExists = await users.findOne({ email }, CASE_INSENSITIVE);
     if (emailExists) {
       throw new Error("Email already exists");
     }
@@ -114,6 +163,8 @@ export const addUserOath = async (data: User) => {
   }
 };
 
+const tokenExpiry = () => new Date(Date.now() + 24 * 60 * 60 * 1000);
+
 //FUNCTION SENDING VERIFICATION TO EMAIL
 const sendVerificationEmail = async (email: string, token: string) => {
   const transporter = nodemailer.createTransport({
@@ -121,9 +172,6 @@ const sendVerificationEmail = async (email: string, token: string) => {
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
-    },
-    tls: {
-      rejectUnauthorized: false, // Only for development; not recommended for production
     },
   });
 
@@ -170,22 +218,29 @@ export const verifyUserEmail = async (token: string) => {
   if (!users) throw new Error("Users collection is not initialized");
 
   try {
-    console.log("Token received:", token);
-    const user = await users.findOne({ verificationToken: token });
-    console.log("User found:", user);
-
     // Find the user by the verification token and update their status to verified
     const updatedUser = await users.findOneAndUpdate(
-      { verificationToken: token }, // Find the user with the token
+      {
+        verificationToken: token,
+        // Links expire after 24h (older accounts without an expiry still work)
+        $or: [
+          { verificationExpires: { $exists: false } },
+          { verificationExpires: { $gt: new Date() } },
+        ],
+      },
       {
         $set: { isVerified: true }, // Set the user as verified
-        $unset: { verificationToken: "" }, // Remove the verification token
+        $unset: { verificationToken: "", verificationExpires: "" },
       },
       { returnDocument: "after" } // Return the updated document after the update
     );
     //here will be the logic of redirect
     if (!updatedUser) {
-      return { status: 400, message: "Invalid token" };
+      return {
+        status: 400,
+        message:
+          "This verification link is invalid or has expired. Sign up again with the same email to get a new one.",
+      };
     }
 
     return {
@@ -205,7 +260,10 @@ export const logUser = async (email: string, password: string) => {
   if (!users) throw new Error("Users collection is not initialized");
 
   try {
-    const user = await users.findOne({ email });
+    const user = await users.findOne(
+      { email: normalizeEmail(email) },
+      CASE_INSENSITIVE
+    );
     if (!user) {
       return { status: 400, message: "User does not exist" };
     }
@@ -243,7 +301,8 @@ export const findUserByEmail = async (email: string) => {
   if (!users) await init();
   if (!users) throw new Error("Users collection is not initialized");
 
-  return await users.findOne({ email });
+  if (!email) return null;
+  return await users.findOne({ email: normalizeEmail(email) }, CASE_INSENSITIVE);
 };
 
 //FIND ALL USERS FROM DB (USED FOR RENDERING ALL REVIEWS FOR A GAME)

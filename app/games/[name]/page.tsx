@@ -4,14 +4,27 @@ import GameDets from "@/app/Components/Game-components/GameDets";
 import UserReviews from "@/app/Components/Game-components/UserReviews";
 import RelatedGames from "@/app/Components/Game-components/RelatedGames";
 import NavBar from "@/app/Components/Game-components/NavBar";
+import { notFound } from "next/navigation";
 import { getGameBySlug } from "@/app/Game Collection/functions";
+
+// Unknown slugs (or RAWG errors) become a real 404 instead of a 500
+const loadGame = async (slug: string) => {
+  try {
+    const game = await getGameBySlug(slug);
+    if (!game?.id) notFound();
+    return game;
+  } catch (error) {
+    if ((error as { digest?: string })?.digest?.startsWith("NEXT_NOT_FOUND")) throw error;
+    notFound();
+  }
+};
 
 export async function generateMetadata({
   params,
 }: {
   params: { name: string };
 }): Promise<Metadata> {
-  const game = await getGameBySlug(params.name);
+  const game = await loadGame(params.name);
   const year = game.released?.slice(0, 4);
   const description =
     game.description_raw
@@ -19,11 +32,12 @@ export async function generateMetadata({
       .replace(/\*\*(.*?)\*\*/g, "$1")
       .replace(/\*(.*?)\*/g, "$1")
       .slice(0, 155) ||
-    `Read reviews and info for ${game.name} on CineGame Critic.`;
+    `Read reviews and info for ${game.name} on Pixel Movies.`;
 
   return {
     title: `${game.name}${year ? ` (${year})` : ""}`,
     description,
+    alternates: { canonical: `/games/${game.slug}` },
     openGraph: {
       title: `${game.name}${year ? ` (${year})` : ""}`,
       description,
@@ -42,7 +56,7 @@ export async function generateMetadata({
 }
 
 export default async function Games({ params }: { params: { name: string } }) {
-  const game = await getGameBySlug(params.name);
+  const game = await loadGame(params.name);
   const year = game.released?.slice(0, 4);
 
   const structuredData = {

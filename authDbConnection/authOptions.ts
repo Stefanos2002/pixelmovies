@@ -8,6 +8,7 @@ import {
   logUser,
 } from "@/app/User Collection/connection";
 import { ObjectId } from "mongodb";
+import { rateLimit } from "./rateLimit";
 
 interface User {
   _id: ObjectId;
@@ -42,6 +43,13 @@ export const authOptions: NextAuthOptions = {
           return null; // Return null if no credentials
         }
 
+        // Slow down password guessing: 10 attempts per email per 15 minutes
+        const emailKey = credentials.email.trim().toLowerCase();
+        if (!(await rateLimit(`login:${emailKey}`, 10, 15 * 60))) {
+          console.log("Too many login attempts for", emailKey);
+          return null;
+        }
+
         const user = await logUser(credentials.email, credentials.password);
 
         if (user.status === 200 && user._id) {
@@ -58,7 +66,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   pages: {
-    signIn: "/Authentication/Signin",
+    signIn: "/authentication/signin",
   },
   session: {
     strategy: "jwt",
@@ -91,8 +99,14 @@ export const authOptions: NextAuthOptions = {
         const email = user.email;
         const name = user.name;
 
-        // Find user by email to check existence
-        const existingUser = await findUserByEmail(email || "");
+        // e.g. GitHub accounts with a private email: without an email we
+        // can't create or match a user record, so refuse with a clear reason
+        if (!email) {
+          return "/authentication/signin?error=NoEmail";
+        }
+
+        // Find user by email to check existence (case-insensitive)
+        const existingUser = await findUserByEmail(email);
 
         if (existingUser) {
           // Check if the existing user was created via credentials or another provider
@@ -100,7 +114,7 @@ export const authOptions: NextAuthOptions = {
 
           if (["github", "google"].includes(account.provider)) {
             if (account.provider !== provider) {
-              return "/Signin?error=EmailInUse";
+              return `/authentication/signin?error=EmailInUse&provider=${provider}`;
             }
             return true;
           }

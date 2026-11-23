@@ -18,7 +18,7 @@ const roboto = Roboto({
 export const metadata: Metadata = {
   title: "Movies",
   description:
-    "Browse movies on CineGame Critic — discover trending films, upcoming releases, and filter by genre. Read user reviews and add titles to your watchlist.",
+    "Browse movies on Pixel Movies — discover trending films, upcoming releases, and filter by genre. Read user reviews and add titles to your watchlist.",
 };
 
 export default function MoviesLayout({

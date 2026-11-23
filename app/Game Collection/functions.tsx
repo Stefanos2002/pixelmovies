@@ -132,7 +132,8 @@ const isGameReleasedAndInRange = (game: Partial<PostResult>) => {
   return releaseDate >= MIN_RELEASE_DATE && releaseDate <= new Date();
 };
 
-const isMainstreamGame = (game: Partial<PostResult>) => {
+// Shared quality filter — also used by the search dropdown (/api/searchGames)
+export const isMainstreamGame = (game: Partial<PostResult>) => {
   if (!isGameReleasedAndInRange(game)) return false;
   if (isEditionVariant(game)) return false;
   if (isAdultGame(game)) return false;
@@ -162,53 +163,86 @@ export const getAllGames = async (): Promise<PostResult[]> => {
   return docs.map(normalizeGameDocument).filter(isMainstreamGame);
 };
 
-// Layer 1 — Seeding: populates DB with basic game metadata from RAWG list endpoint
-export const seedGamesDB = async (): Promise<PostResult[]> => {
-  const currentTime = new Date();
+const MEMORY_CACHE_TTL_MS = 60 * 60 * 1000; // re-read the DB at most hourly
+const RECENT_REFRESH_INTERVAL_MS = 12 * 60 * 60 * 1000; // hit RAWG at most twice a day
 
-  if (cachedGames && lastUpdated) {
-    const timeDifference = currentTime.getTime() - lastUpdated.getTime();
-    const oneMonthInMs = 30 * 24 * 60 * 60 * 1000;
+const upsertGames = async (
+  gameCollection: Collection<Document>,
+  games: PostResult[],
+) => {
+  if (!games.length) return;
+  await gameCollection.bulkWrite(
+    games.map((game) => ({
+      updateOne: {
+        filter: { id: game.id },
+        // List results never carry description_raw, so enriched fields survive
+        update: { $set: { ...game } },
+        upsert: true,
+      },
+    })),
+    { ordered: false },
+  );
+};
 
-    if (timeDifference < oneMonthInMs) {
-      console.log("Returning cached games");
-      return cachedGames;
+// Layer 1a — Keeps new releases flowing in regardless of the storage cap.
+// Pulls this year's and last year's most-added games from RAWG and upserts
+// them (also refreshing their ratings). Gated through a DB timestamp so
+// serverless cold starts don't each call RAWG.
+const refreshRecentGames = async (gameCollection: Collection<Document>) => {
+  const client = await clientPromise;
+  const meta = client.db().collection("games_meta");
+  const state = await meta.findOne({ key: "recent-refresh" });
+  const now = new Date();
+  if (
+    state?.at &&
+    now.getTime() - new Date(state.at).getTime() < RECENT_REFRESH_INTERVAL_MS
+  ) {
+    return;
+  }
+  // Claim the slot first so parallel requests don't refresh at the same time
+  await meta.updateOne(
+    { key: "recent-refresh" },
+    { $set: { at: now } },
+    { upsert: true },
+  );
+
+  const year = now.getFullYear();
+  const today = now.toISOString().split("T")[0];
+  const ranges = [
+    { dates: `${year}-01-01,${today}`, pages: 6 },
+    { dates: `${year - 1}-01-01,${year - 1}-12-31`, pages: 3 },
+  ];
+
+  let total = 0;
+  for (const { dates, pages } of ranges) {
+    for (let page = 1; page <= pages; page += 1) {
+      const url = `${apiPosterUrl}&dates=${dates}&ordering=-added&page_size=${RANGE_PAGE_SIZE}`;
+      const results = await getGameData(url, page);
+      const mainstream = results.filter(isMainstreamGame);
+      await upsertGames(gameCollection, mainstream);
+      total += mainstream.length;
+      if (results.length < RANGE_PAGE_SIZE) break;
     }
   }
+  console.log(`Recent games refresh: upserted ${total} games`);
+};
 
-  try {
-    const gameCollection = await getGamesCollection();
+// Layer 1b — One-off historical backfill, only while the DB is under the cap
+const backfillHistoricalGames = async (
+  gameCollection: Collection<Document>,
+  existingGames: PostResult[],
+) => {
+  let remainingSpace = Math.max(0, MAX_STORED_GAMES - existingGames.length);
+  if (remainingSpace <= 0) return;
 
-    const dateRanges: string[] = [];
-    for (let year = 2000; year <= 2026; year += 5) {
-      const endYear = Math.min(year + 4, 2026);
-      dateRanges.push(`${year}-01-01,${endYear}-12-31`);
-    }
-    dateRanges.reverse();
-
-    const existingDocs = (await gameCollection
-      .find<PostResult>({ ...getValidGameFilter() })
-      .project(minimalGameProjection)
-      .toArray()) as PostResult[];
-
-    const existingGames = existingDocs
-      .map(normalizeGameDocument)
-      .filter(isMainstreamGame);
-
-    const existingIds = new Set(existingGames.map((game) => game.id));
-    let remainingSpace = Math.max(0, MAX_STORED_GAMES - existingGames.length);
-    const allGames: PostResult[] = [...existingGames];
-
-    if (remainingSpace <= 0) {
-      cachedGames = allGames.slice(0, MAX_STORED_GAMES);
-      lastUpdated = new Date();
-      if (process.env.NODE_ENV !== "production") {
-        global._cachedGames = cachedGames;
-        global._lastUpdated = lastUpdated;
-      }
-      console.log(`DB already has ${cachedGames.length} mainstream games`);
-      return cachedGames;
-    }
+  const existingIds = new Set(existingGames.map((game) => game.id));
+  const lastYear = new Date().getFullYear();
+  const dateRanges: string[] = [];
+  for (let year = 2000; year <= lastYear; year += 5) {
+    const endYear = Math.min(year + 4, lastYear);
+    dateRanges.push(`${year}-01-01,${endYear}-12-31`);
+  }
+  dateRanges.reverse();
 
     for (const dateRange of dateRanges) {
       if (remainingSpace <= 0) break;
@@ -240,21 +274,8 @@ export const seedGamesDB = async (): Promise<PostResult[]> => {
         const gamesToInsert = filteredResults.slice(0, remainingSpace);
 
         if (gamesToInsert.length > 0) {
-          const bulkOperations = gamesToInsert.map((game) => ({
-            updateOne: {
-              filter: { id: game.id },
-              update: { $set: { ...game } },
-              upsert: true,
-            },
-          }));
-
-          await gameCollection.bulkWrite(bulkOperations, { ordered: false });
-
-          gamesToInsert.forEach((game) => {
-            existingIds.add(game.id);
-            allGames.push(normalizeGameDocument(game));
-          });
-
+          await upsertGames(gameCollection, gamesToInsert);
+          gamesToInsert.forEach((game) => existingIds.add(game.id));
           remainingSpace = Math.max(0, remainingSpace - gamesToInsert.length);
           console.log(
             `Inserted ${gamesToInsert.length} games for ${dateRange} page ${page}`,
@@ -264,19 +285,52 @@ export const seedGamesDB = async (): Promise<PostResult[]> => {
         if (gameResults.length < RANGE_PAGE_SIZE) break;
       }
     }
+};
 
-    cachedGames = allGames.slice(0, MAX_STORED_GAMES);
-    lastUpdated = new Date();
-    if (process.env.NODE_ENV !== "production") {
-      global._cachedGames = cachedGames;
-      global._lastUpdated = lastUpdated;
-    }
-    console.log(`Total games fetched: ${cachedGames.length}`);
-    return cachedGames;
+let inflightSeed: Promise<PostResult[]> | null = null;
+
+const loadAndSeedGames = async (): Promise<PostResult[]> => {
+  const gameCollection = await getGamesCollection();
+
+  // RAWG problems must never take the games page down — fall back to the DB
+  try {
+    await refreshRecentGames(gameCollection);
   } catch (error) {
-    console.error("Error seeding games DB:", error);
-    throw error;
+    console.error("Recent games refresh failed:", error);
   }
+  try {
+    await backfillHistoricalGames(gameCollection, await getAllGames());
+  } catch (error) {
+    console.error("Historical backfill failed:", error);
+  }
+
+  // Sort BEFORE anything is cached, so the newest games always come first
+  const games = sortGamesByRelease(await getAllGames());
+  cachedGames = games;
+  lastUpdated = new Date();
+  if (process.env.NODE_ENV !== "production") {
+    global._cachedGames = cachedGames;
+    global._lastUpdated = lastUpdated;
+  }
+  console.log(`Total games available: ${games.length}`);
+  return games;
+};
+
+// Layer 1 — Seeding entry point used by the main games page
+export const seedGamesDB = async (): Promise<PostResult[]> => {
+  if (
+    cachedGames &&
+    lastUpdated &&
+    Date.now() - lastUpdated.getTime() < MEMORY_CACHE_TTL_MS
+  ) {
+    return cachedGames;
+  }
+  if (!inflightSeed) {
+    inflightSeed = loadAndSeedGames().finally(() => {
+      inflightSeed = null;
+    });
+  }
+  return inflightSeed;
 };
 
 export const sortGamesByRelease = (games: PostResult[]) => {
@@ -539,9 +593,9 @@ export const searchGames = async (query: string): Promise<PostResult[]> => {
   const words = normalized.split(/\s+/).filter(Boolean);
   const wordPatterns = words.map((word) => {
     const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    return escaped.split("").join("[\\s\\-'.:]*");
+    return escaped.split("").join("[\\s\\-'’‘.:]*");
   });
-  const flexibleRegex = wordPatterns.join("[\\s:,\\-.']*");
+  const flexibleRegex = wordPatterns.join("[\\s:,\\-.'’‘]*");
   const docs = (await gameCollection
     .find<PostResult>({
       name: { $regex: flexibleRegex, $options: "i" },
@@ -555,7 +609,8 @@ export const searchGames = async (query: string): Promise<PostResult[]> => {
     .project(minimalGameProjection)
     .toArray()) as PostResult[];
 
-  const stripPunct = (s: string) => s.toLowerCase().replace(/[\s\-'.:,]+/g, "");
+  const stripPunct = (s: string) =>
+    s.toLowerCase().replace(/[\s\-'’‘.:,]+/g, "");
   const q = stripPunct(normalized);
   const sorted = docs.sort((a, b) => {
     const aName = stripPunct(a.name);
@@ -572,7 +627,6 @@ export const searchGames = async (query: string): Promise<PostResult[]> => {
   return sorted.filter(isMainstreamGame).map(normalizeGameDocument);
 };
 
-// https://api.rawg.io/api/games/3328/game-series?key=1cfc2b828ee34025a611a0cef051f7f1
 export const getGameBySlug = async (name: string) => {
   const gameCollection = await getGamesCollection();
 

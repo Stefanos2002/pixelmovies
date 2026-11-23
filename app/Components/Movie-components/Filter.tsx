@@ -33,8 +33,8 @@ const Filter = () => {
   };
 
   const buildGenreFilterLink = () => {
-    if (selectedGenres.length === 0) return "/Movies/moviePage/1";
-    return `/Movies/Genres/${selectedGenres.join(",")}/1`;
+    if (selectedGenres.length === 0) return "/movies/moviepage/1";
+    return `/movies/genres/${selectedGenres.join(",")}/1`;
   };
 
   const handleClick = () => {

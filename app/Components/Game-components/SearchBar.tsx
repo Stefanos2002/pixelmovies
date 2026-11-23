@@ -218,7 +218,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ className }) => {
         e.preventDefault(); // Prevent form submission
         const selectedResult = search[selectedIndex];
         if (selectedResult) {
-          window.location.href = `/Games/${selectedResult.slug}`;
+          window.location.href = `/games/${selectedResult.slug}`;
         }
       }
       if (selectedIndex !== -1) {
@@ -251,10 +251,10 @@ const SearchBar: React.FC<SearchBarProps> = ({ className }) => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (selectedIndex >= 0 && search[selectedIndex]) {
-      window.location.href = `/Games/${search[selectedIndex].slug}`;
+      window.location.href = `/games/${search[selectedIndex].slug}`;
     } else if (inputValue.trim()) {
       router.push(
-        `/Games/page/1?search=${encodeURIComponent(inputValue.trim())}`,
+        `/games/page/1?search=${encodeURIComponent(inputValue.trim())}`,
       );
       setVisible(false);
     }
@@ -296,7 +296,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ className }) => {
           {search.map((result, index) => (
             <Link
               key={index}
-              href={`/Games/${result.slug}`}
+              href={`/games/${result.slug}`}
               className="flex container items-center flex-row transition-all duration-300 ease-in-out hover:scale-[1.03] pl-2 sm:pl-6 hover:text-stone-400"
             >
               <div className="relative overflow-hidden w-20 h-14 min-[420px]:w-28 min-[420px]:h-20 sm:w-44 sm:h-32 flex-shrink-0 flex-grow-0">

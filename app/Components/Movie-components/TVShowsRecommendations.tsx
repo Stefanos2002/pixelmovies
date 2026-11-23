@@ -57,7 +57,7 @@ const TVShowsRecommendations = ({ tvShowID }: { tvShowID: string }) => {
             key={item.id}
             className="lg:hover:scale-110 md:hover:border md:hover:shadow-2xl md:hover:shadow-gray-600 lg:hover:border lg:hover:shadow-2xl lg:hover:shadow-gray-600 w-full transition duration-500 ease-in-out"
           >
-            <Link href={`/Movies/TVShows/${item.id}`}>
+            <Link href={`/movies/tvshows/${item.id}`}>
               <div className="w-full h-56 md:h-56 lg:h-96 relative">
                 <img
                   src={`${imageURL}${item.poster_path}`}
@@ -69,7 +69,7 @@ const TVShowsRecommendations = ({ tvShowID }: { tvShowID: string }) => {
             <div className="bg-[#4c545b] flex flex-col h-44 cards rec-text-container">
               {/* title and rating container */}
               <Link
-                href={`/Movies/TVShows/${item.id}`}
+                href={`/movies/tvshows/${item.id}`}
                 className="flex lg:ml-4 h-10 text-white justify-between"
               >
                 <div className="w-[55%]">

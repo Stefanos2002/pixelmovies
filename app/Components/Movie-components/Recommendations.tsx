@@ -60,7 +60,7 @@ const Recommendations = ({ movieId }: { movieId: string }) => {
             key={item.id}
             className="hover:scale-110 hover:border hover:shadow-2xl hover:shadow-gray-600 w-full transition duration-500 ease-in-out"
           >
-            <Link href={`/Movies/${item.id}`}>
+            <Link href={`/movies/${item.id}`}>
               <div className="w-full h-56 md:h-56 lg:h-96 relative">
                 <img
                   src={`${imageURL}${item.poster_path}`}
@@ -71,7 +71,7 @@ const Recommendations = ({ movieId }: { movieId: string }) => {
             </Link>
             <div className="bg-[#4c545b] flex flex-col h-44 cards rec-text-container">
               <Link
-                href={`/Movies/${item.id}`}
+                href={`/movies/${item.id}`}
                 className="flex lg:ml-4 h-10 text-white justify-between"
               >
                 <div className="w-[55%]">

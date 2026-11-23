@@ -109,7 +109,7 @@ const ShowReviews = ({ params }: { params: { id: string } }) => {
         alert(
           `Review added successfully, redirecting to ${showData?.name} page`
         );
-        router.push(`/Movies/TVShows/${showId}`);
+        router.push(`/movies/tvshows/${showId}`);
         router.refresh();
       }, 1000);
     } catch (err) {

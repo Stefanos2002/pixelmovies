@@ -6,9 +6,9 @@ import { FiUser, FiFilm, FiLogOut } from "react-icons/fi";
 import { FaGamepad } from "react-icons/fa";
 
 const navItems = [
-  { href: "/Account/info", label: "Account Details", icon: <FiUser /> },
-  { href: "/Account/games", label: "Games", icon: <FaGamepad /> },
-  { href: "/Account/movies", label: "Movies", icon: <FiFilm /> },
+  { href: "/account/info", label: "Account Details", icon: <FiUser /> },
+  { href: "/account/games", label: "Games", icon: <FaGamepad /> },
+  { href: "/account/movies", label: "Movies", icon: <FiFilm /> },
 ];
 
 const UserOptions = () => {

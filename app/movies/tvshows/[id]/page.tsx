@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import TVShowsRecommendations from "@/app/Components/Movie-components/TVShowsRecommendations";
 import { FaStar } from "react-icons/fa6";
 import {
@@ -20,8 +22,28 @@ const getTVDetails = async (id: string) => {
   return data;
 };
 
+// SEO: per-title metadata; unknown ids become a real 404
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const item: any = await getTVDetails(params.id.toString());
+  if (!item?.id) notFound();
+  const year = item.first_air_date?.slice(0, 4);
+  const title = `${item.name}${year ? ` (${year})` : ""}`;
+  const description =
+    item.overview?.slice(0, 155) || `Reviews and info for ${item.name} on Pixel Movies.`;
+  const image = item.poster_path ? `${imageURL}${item.poster_path}` : undefined;
+  return {
+    title,
+    description,
+    alternates: { canonical: `/movies/tvshows/${params.id}` },
+    openGraph: { title, description, type: "video.tv_show", images: image ? [image] : [] },
+    twitter: { card: "summary_large_image", title, description, images: image ? [image] : [] },
+  };
+}
+
+
 const TVShowDetails = async ({ params }: { params: TVDetails }) => {
   const tvShow: TVDetails = await getTVDetails(params.id.toString());
+  if (!tvShow?.id) notFound();
 
   return (
     <main className="font-roboto not-search id-main lg:-ml-6">
@@ -86,7 +108,7 @@ const TVShowDetails = async ({ params }: { params: TVDetails }) => {
       <div className="md:ml-40 lg:ml-[20rem] lg:mt-10 flex gap-2">
         <AddToWatchlistId id={Number(params.id)} media_type="tv" />
         <Link
-          href={`/Movies/TVShows/${params.id}/reviews`}
+          href={`/movies/tvshows/${params.id}/reviews`}
           className="bg-[#6a7f97] text-center p-2 transition duration-200 hover:opacity-75 text-white rounded-sm"
         >
           Write a review

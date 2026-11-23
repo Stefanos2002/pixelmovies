@@ -46,7 +46,7 @@ const UpComing = async ({ params }: { params: { page: string } }) => {
       <h1 className="sr-only">Upcoming Movies</h1>
       <div className="flex justify-end mr-10 mt-2">
         <Link
-          href={"/Movies/TVShows/Upcoming-tvshows/1"}
+          href={"/movies/tvshows/upcoming-tvshows/1"}
           className="flex flex-row gap-2 items-center hover:opacity-85 transition duration-200 justify-end p-2 rounded mt-2 cursor-pointer text-[#d1d1d1] bg-[#4c545b] trending-button not-search"
         >
           <ImTv style={{ flexShrink: 0, fontSize: "1.4rem" }} />
@@ -57,7 +57,7 @@ const UpComing = async ({ params }: { params: { page: string } }) => {
        <Cards movieResultData={movieData} upcoming/>
       </div>
       <div>
-        <MoviePages page={Number(params.page)} link={`Movies/Upcoming-Movies`} />
+        <MoviePages page={Number(params.page)} link={`movies/upcoming-movies`} />
       </div>
     </div>
   );

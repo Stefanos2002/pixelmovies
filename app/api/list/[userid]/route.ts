@@ -1,11 +1,14 @@
 import { addToList } from "@/app/User Collection/connection";
 import { NextRequest, NextResponse } from "next/server";
+import { requireOwner } from "@/authDbConnection/requireUser";
 
 export async function POST(
   req: NextRequest,
   { params }: { params: { userid: string } }
 ) {
   const userid = params.userid;
+  const auth = await requireOwner({ userId: userid });
+  if (auth instanceof NextResponse) return auth;
   try {
     const { gameId, gameName, gamePic, date } = await req.json();
 

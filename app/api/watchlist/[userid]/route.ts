@@ -1,12 +1,15 @@
 import { baseUrl } from "@/app/Constants/constants";
 import { addToWatchlist, findUserById } from "@/app/User Collection/connection";
 import { NextRequest, NextResponse } from "next/server";
+import { requireOwner } from "@/authDbConnection/requireUser";
 
 export async function POST(
   req: NextRequest,
   { params }: { params: { userid: string } }
 ) {
   const userid = params.userid;
+  const auth = await requireOwner({ userId: userid });
+  if (auth instanceof NextResponse) return auth;
   try {
     const { id, media_type } = await req.json();
 
@@ -34,6 +37,8 @@ export async function GET(
   { params }: { params: { userid: string } }
 ) {
   const userid = params.userid;
+  const auth = await requireOwner({ userId: userid });
+  if (auth instanceof NextResponse) return auth;
 
   try {
     const user = await findUserById(userid);
