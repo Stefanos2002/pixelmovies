@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { FaFacebook, FaGithub } from "react-icons/fa";
-import { FaSquareInstagram, FaXTwitter } from "react-icons/fa6";
+
+const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "";
 
 function Footer() {
   return (
@@ -18,37 +18,6 @@ function Footer() {
           <span className="title text-white text-lg mb-2 font-bold pointer-events-auto font-sans">
             Pixel Movies
           </span>
-        </div> */}
-        {/* <div className="flex flex-col items-center">
-          <span className="sm:text-lg text-md mb-3 text-slate-100 font-bold">
-            Follow Us:
-          </span>
-          <div className="flex flex-row mb-4 gap-4">
-            <Link
-              href={"https://github.com/WebDevTeam2/CGC.git"}
-              className="text-4xl text-stone-950 bg-slate-200 rounded-full transition-all ease-in-out duration-300 hover:scale-110"
-            >
-              <FaGithub />
-            </Link>
-            <Link
-              href={"https://www.instagram.com/cinegamecritic_official/"}
-              className="text-4xl text-fuchsia-600 bg-white rounded-lg transition-all ease-in-out duration-300 hover:scale-110"
-            >
-              <FaSquareInstagram />
-            </Link>
-            <Link
-              href={"https://www.facebook.com/profile.php?id=61567400382908"}
-              className="text-4xl text-blue-700 bg-white rounded-full transition-all ease-in-out duration-300 hover:scale-110"
-            >
-              <FaFacebook />
-            </Link>
-            <Link
-              href={"https://x.com/cinegamecritic"}
-              className="text-4xl text-slate-100 bg-none rounded-full transition-all ease-in-out duration-300 hover:scale-110"
-            >
-              <FaXTwitter />
-            </Link>
-          </div>
         </div> */}
       </div>
       {/* <div className="w-full bg-slate-200 h-[0.5px]"></div> */}
@@ -77,6 +46,16 @@ function Footer() {
         <Link href="/terms" className="hover:text-white">
           Terms of Use
         </Link>
+        {CONTACT_EMAIL && (
+          <>
+            <span aria-hidden className="text-slate-600">
+              ·
+            </span>
+            <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-white">
+              Contact
+            </a>
+          </>
+        )}
       </nav>
     </div>
   );

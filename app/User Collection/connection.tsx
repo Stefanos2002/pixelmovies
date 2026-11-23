@@ -167,18 +167,26 @@ const tokenExpiry = () => new Date(Date.now() + 24 * 60 * 60 * 1000);
 
 //FUNCTION SENDING VERIFICATION TO EMAIL
 const sendVerificationEmail = async (email: string, token: string) => {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+  const auth = {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  };
+  // Domain mailbox (e.g. info@pixelmovies.gr on Papaki) when SMTP_HOST is set;
+  // otherwise falls back to a Gmail account with an App Password.
+  const port = Number(process.env.SMTP_PORT) || 465;
+  const transporter = process.env.SMTP_HOST
+    ? nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port,
+        secure: port === 465, // 465 = SSL, 587 = STARTTLS
+        auth,
+      })
+    : nodemailer.createTransport({ service: "gmail", auth });
 
   const verificationUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/users/verify?token=${token}`;
 
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: `"Pixel Movies" <${process.env.EMAIL_USER}>`,
     to: email,
     subject: "Verify your email address",
     text: `Please verify your email by clicking on the following link: ${verificationUrl}`,
